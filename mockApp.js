@@ -23,6 +23,7 @@ Do not modify the api() or app() functions.
 'use strict'
 
 let applicationRunning = true;
+let error500s = 0;
 
 //api returns a random http status code and message
 function api(count) {
@@ -70,20 +71,29 @@ function handleHTTPData(data) {
   switch (data.status) {
     case 200:
       handleResponse(data);
+	  error500s = 0;
       break;
     case 401:
       handleResponse(data); 
       shutdownApp();
       break;
+	case 403:
+	  handleResponse(data);
+	  error500s = 0;
+	  break;
     case 404:
       handleResponse(data); 
+	  error500s = 0;
       break;
     case 500:
       handleResponse(data);
-      shutdownApp();
+	  error500s++;
+	  if(error500s >= 5)
+		shutdownApp();
       break;
     default:
       console.log('Something went wrong: ' + data.status + ' ' + data.message);
+	  error500s = 0;
   }
 } 
 
